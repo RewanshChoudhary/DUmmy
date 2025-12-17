@@ -15,34 +15,61 @@ MONGO_COLLECTION = os.getenv("MONGO_COLLECTION_SYLLABUS")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_PROMPT= """
 
-Extract a structured syllabus from the provided document.
-Follow these rules:
+You are given OCR-extracted text from an academic syllabus document.
 
-1. Preserve sequencing: course info → objectives → outcomes → modules → textbooks → reference books → evaluation.
-2. Do not hallucinate. Use only information explicitly in the document.
-3. Maintain exact module order, titles, and hours.
-4. Missing sections must be empty arrays or empty strings.
-5. Output strictly valid JSON. No explanations, no comments, no extra text.
-6. (High Priority) Should properly scan and give proper syllabus module wise
-Output JSON structure:
-{ 
-  "course_code": "" ...course_code_example=BCHY101L and it should be included ALWAYS..., 
+Your task is to extract ONLY the syllabus structure strictly according to the rules below.
+
+RULES (STRICT — NO EXCEPTIONS):
+
+1. Extract ONLY the following fields:
+   - course_code
+   - course_title
+   - modules
+
+2. DO NOT include objectives, outcomes, textbooks, reference books, evaluation, or any other sections.
+
+3. The course_code MUST:
+   - Match this exact pattern: ABCD123L or ABC123L (uppercase letters + 3 digits + L)
+   - Example: "BCHY101L"
+   - If the document contains long or repeated strings like:
+     "BCHY101L_ENGINEERING-CHEMISTRY_TH_1.0_68_BCHY101L..."
+     you MUST extract ONLY the valid course code part: "BCHY101L"
+   - course_code MUST ALWAYS be present. If not clearly found, return an empty string.
+
+4. Modules must be extracted strictly module-wise:
+   - Preserve exact module order as in the document
+   - Preserve exact module titles
+   - Preserve exact hours (if mentioned)
+   - Extract topics exactly as written (no paraphrasing, no merging, no guessing)
+
+5. Do NOT hallucinate:
+   - If a module has no topics listed, return an empty topics array
+   - If hours are not mentioned, return an empty string
+   - If course_title is missing, return an empty string
+
+6. Output MUST be:
+   - Strictly valid JSON
+   - No explanations
+   - No comments
+   - No markdown
+   - No extra text before or after JSON
+
+OUTPUT JSON SCHEMA (STRICT):
+
+{
+  
   "course_title": "",
-  "pre_requisite": "",
-  "course_objectives": [],
-  "course_outcomes": [],
-  "modules": [],
-  
-  "reference_books": [],
-  
-  
-  
+  "modules": [
+    {
+      "module_number": "",
+      "module_title": "",
+      "hours": "",
+      "topics": []
+    }
+  ]
 }
 
-Module rules: module_number, module_title, hours, topics[].
-Textbook/reference entries must keep numbering and full text.
 
-Return only the JSON object.
 """
 
 genai.configure(api_key=GEMINI_API_KEY)
@@ -107,10 +134,9 @@ def process_folder():
             continue
 
         pdf_path = os.path.join(PDF_DIR, file)
-        print("Processing:", pdf_path)
-
+       
         ocr_text = extract_ocr_from_pdf(pdf_path)
-        print("OCR length:", len(ocr_text))
+      
 
         
         syllabus_json = extract_syllabus_json(ocr_text)
@@ -126,4 +152,5 @@ def process_folder():
 if __name__ == "__main__":
     process_folder()
 
-    
+
+
