@@ -94,21 +94,23 @@ def call_llm() -> dict:
         prompt,
         generation_config={"response_mime_type": "application/json"}
     )
-    raw_json=combined_response.text
+    topic_json=combined_response.text
 
 
-    if (raw_json is None or raw_json.strip()==""):
+    if (topic_json is None or topic_json.strip()==""):
         return ValueError("Gemini returned an empty string")
     
     
 
     
-    return json.loads(raw_json)
+    return json.loads(topic_json)
 
 
 
 def process_paper():
-    print(call_llm())
+
+    extracted_topics=call_llm()
+    validated
    
 
     
