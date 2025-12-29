@@ -1,0 +1,10 @@
+GEMINI_API_KEY=
+MONGO_URI=mongodb+srv://rewanshchoudhary57_db_user:gKsEAGtEs82mN3eK@testingmodule.tzbzpve.mongodb.net/?appName=TestingModule
+
+MONGO_DB=Syllabus_Analytics
+MONGO_COLLECTION_SYLLABUS=syllabus
+MONGO_COLLECTION_TOPIC=topic_stats
+
+
+PDF_DIR=./data/Syllabus
+QUESTION_DIR=./data/QuestionPapers
